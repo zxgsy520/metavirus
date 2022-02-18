@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 LOG = logging.getLogger(__name__)
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = ("Xingguo Zhang",)
 __email__ = "invicoun@foxmail.com"
 __all__ = []
@@ -94,8 +94,8 @@ def read_stat_mpa(files):
             if len(tax_dict) == 1:
                 abund += int(line[1])
             if line[0] not in data:
-                data[line[0]] = generate_list(n-1)
-            data[line[0]].append(int(line[1]))
+                data[line[0]] = generate_list(len(files))
+            data[line[0]][n-1] = int(line[1])
         abunds.append(abund)
 
     return samples, abunds, data
