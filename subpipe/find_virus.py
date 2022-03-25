@@ -314,7 +314,7 @@ def run_find_virus(genome, name, thread, job_type, concurrent, refresh,
     for k, v in work_dict.items():
         work_dict[k] = mkdir(os.path.join(work_dir, v))
 
-    enomes = seq_split(
+    genomes = seq_split(
         filenames=[genome],
         mode="length",
         num=10000000,
