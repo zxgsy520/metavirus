@@ -4,7 +4,7 @@
 library(VirFinder)
 
 
-run_virfinder <- function(fasta){
+run_virfinder <- function(fasta, minlen=10000, score=0.9, pvalue=0.01){
 
     result <- VF.pred(fasta)
 
@@ -14,13 +14,13 @@ run_virfinder <- function(fasta){
        seqscore <- t(result[3])[i]
        seqpvalue <- t(result[4])[i]
 
-       if(seqlen < 10000){
+       if(seqlen < minlen){
            next;
        }
-       if(seqscore < 0.9){
+       if(seqscore < score){
            next;
        }
-       if(seqpvalue > 0.1){
+       if(seqpvalue > pvalue){
           next;
        }
        fo <- paste(seqid, seqlen, seqscore, seqpvalue, "\n", sep="\t")
@@ -44,4 +44,4 @@ add_help_args <- function(args){
 
 args <- commandArgs(trailingOnly=TRUE)
 add_help_args(args)
-run_virfinder(args[1])
+run_virfinder(args[1], minlen=5000, score=0.8, pvalue=0.05)
