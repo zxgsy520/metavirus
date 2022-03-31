@@ -9,7 +9,7 @@ options(bitmapType='cairo')
 add_help_args <- function(args){
 
     if(length(args) != 3) {
-        cat("Version: v1.0.0\n")
+        cat("Version: v1.0.1\n")
         cat("Author:Xingguo Zhang\n")
         cat("Email:invicoun@foxmail.com\n")
         cat("Function:Plot the abundance of each sample.\n")
@@ -40,11 +40,14 @@ plot_abundance_bar <- function(file, level, prefix){
     colnames(data)[1] <- c("taxid")
 
     if(ncol(data) <= 6){
-        width <- 12
+        width <- 16
     }else if(ncol(data) <= 11){
-        width <- 18
+        width <- 28
     }else{
-        width <- 23
+        width <- 35
+    }
+    if(level=="species"){
+        width <- width + 2
     }
     
     data_melt <- melt(data)
@@ -62,8 +65,9 @@ plot_abundance_bar <- function(file, level, prefix){
         ) + guides(fill=guide_legend(ncol=1, title=NULL)) + #geom_text(aes(y=lable_y, label=value), colour="white", size=2, hjust=0.6) +
         scale_fill_manual(values =COLORS)
 
-        ggsave(paste(prefix, paste0(level, ".pdf"), sep='_'), units="cm", width=width, height=15)
-        ggsave(paste(prefix, paste0(level, ".png"), sep='_'), units="cm", width=width, height=15)
+    ggsave(paste(prefix, paste0(level, ".pdf"), sep='_'), units="cm", width=width, height=15)
+
+    ggsave(paste(prefix, paste0(level, ".png"), sep='_'), units="cm", width=width, height=15)
 
 }
 

@@ -20,7 +20,7 @@ COLORS <- c("#8DD3C7", "#FFFFB3", "#BEBADA", "#FB8072", "#80B1D3", "#FDB462",
 add_help_args <- function(args){
 
     if(length(args) != 4) {
-        cat("Version: v1.0.0\n")
+        cat("Version: v1.1.0\n")
         cat("Author:Xingguo Zhang\n")
         cat("Email:invicoun@foxmail.com\n")
         cat("Function:Plot a cluster histogram.\n")
@@ -47,6 +47,37 @@ treeline <- function(pos1, pos2, height, col1, col2){ #聚类树绘制，按分�
 }
 
 
+maxlength <- function(names){
+
+    maxlen <- 0
+    for (i in names){
+        if (nchar(i) >= maxlen){
+            maxlen <- nchar(i)
+        }
+    }
+    return(maxlen)
+
+}
+
+
+zoom_ratio <- function(names){
+ 
+    zor <- 2.4   
+    maxlen <- maxlength(names)
+
+    if(maxlen <= 3){
+        zor <- 2.4
+    }else if(maxlen <= 5){
+        zor <- 2.3
+    }else if(maxlen <= 8){
+        zor <- 2.2
+    }else{
+        zor <- 2.1
+    }
+    return(zor)
+}
+
+
 plot_tree_bar <- function(file, group, level, prefix){
 
     data <- read.delim(file, row.names=1, sep="\t", head=TRUE, check.names=FALSE)
@@ -70,7 +101,11 @@ plot_tree_bar <- function(file, group, level, prefix){
         pheight <- 1000
     }
 
+    
     group <- read.delim(group, row.names=1, sep="\t", head=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
+    #group <- read.table(group, row.names=1, header=T, sep="\t")
+    colnames(group) <- c("group")
+    
     grp <- t(group[1])
     group_col <- GROUP_COLORS[1:length(grp)]
     names(group_col) <- c(1:length(grp)) #为每种颜色名命为数字
@@ -88,12 +123,12 @@ plot_tree_bar <- function(file, group, level, prefix){
     dev.control("enable")
 
     layout(t(c(1, 1, 2, 2, 2, 2, 2, 3, 3, 3)))
-    par(mar = c(5, 4, 5, 0))
+    par(mar = c(5, 5, 5, 0))
 
     plot(0, type='n', xaxt='n', yaxt='n', frame.plot=FALSE, xlab='', ylab='',
         xlim = c(-max(tree$height), 0), ylim=c(0, length(tree$order))
     )
-    legend("topleft", legend=group_name, pch=15, col=group_col, bty="n", cex=2.5)
+    legend("topleft", legend=group_name, pch=15, col=group_col, bty="n", cex=2.4)
 
     meanpos <- matrix(rep(0, 2*length(tree$order)), ncol=2)
     meancol <- rep(0, length(tree$order))
@@ -128,13 +163,17 @@ plot_tree_bar <- function(file, group, level, prefix){
     #样本顺序调整为和聚类树中的顺序一致
     data <- data[ ,tree$order]
     names(COLORS) <- rownames(data)
-    par(mar = c(5, 4, 5, 0)) #堆叠柱形图
+    interval <- maxlength(colnames(data))+2
+
+    par(mar = c(5, interval, 5, 0)) #堆叠柱形图
     py <- barplot(as.matrix(data), col=COLORS, space=1, width=0.5,
                  cex.axis = 2.3, horiz=TRUE, cex.lab=3, xlab="Relative Abundance",
                  yaxt="n", las=0.5, ylim=c(0, ncol(data)), #family="mono",
         )
-    text(x=-5.5, y=py, labels=colnames(data),
-         col=group_col[group[tree$order, 2]], cex=2.4, xpd=TRUE
+
+    zor <- zoom_ratio(colnames(data))
+    text(x=-interval*1.2, y=py, labels=colnames(data),
+         col=group_col[group[tree$order, 2]], cex=zor, xpd=TRUE
     )
 
     par(mar=c(5, 0, 5, 0)) #柱形图图例
