@@ -165,7 +165,7 @@ def tlist_str(otulist):
 
     r = []
     for i in otulist:
-        r.append(str(i))
+        r.append(str(int(i)))
 
     return r
 
@@ -197,8 +197,8 @@ def add_hlep_args(parser):
         choices=["p", "c", "o", "f", "g", "s", ""],
         help="Input the displayed species level. choices=[p,c,o,f,g,s], default=all.")
     parser.add_argument("-k", "--kingdom", metavar='STR', type=str, default="",
-        choices=["Bacteria", "Eukaryota", "Viruses"],
-        help="Choose the object of the study. choices=[Bacteria, Eukaryota, Viruses], default=all.")
+        choices=["Bacteria", "Eukaryota", "Viruses", "Fungi"],
+        help="Choose the object of the study. choices=[Bacteria, Eukaryota, Viruses, Fungi], default=all.")
     parser.add_argument("-m", "--model", metavar="STR", type=str,  default="uniform",
         choices=["mean", "uniform", "original"],
         help="Abundance conversion method. choices=[mean, uniform, original], default=uniform.")

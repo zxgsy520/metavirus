@@ -10,13 +10,13 @@ import argparse
 
 LOG = logging.getLogger(__name__)
 
-__version__ = "1.1.1"
+__version__ = "1.0.1"
 __author__ = ("Xingguo Zhang",)
 __email__ = "invicoun@foxmail.com"
 __all__ = []
 
 
-def read_tsv(file, sep=None):
+def read_tsv(file, sep="\t"):
 
     if file.endswith(".gz"):
         fh = gzip.open(file)
@@ -48,54 +48,19 @@ def read_group(file):
     return data
 
 
-def get_required_columns(header, group_data):
-
-    cindex = [0]
-    r = ["Groups"]
-    n = 1
-
-    for i in header[1::]:
-        if i in group_data:
-            cindex.append(n)
-            r.append(group_data[i])
-        n += 1
-
-    return r, cindex
-
-
-def get_abundance(abundance, cindex):
-
-    r = []
-    n = 0 
-    tabund = 0
-
-    for i in cindex:
-        r.append(abundance[i])
-        if n != 0:
-            tabund += float(abundance[i])
-        n += 1
-
-    if tabund == 0:
-        r = []
-    return r
-
-
 def abundance2lefse(abundance, group, cut):
 
     data = read_group(group)
-    header = []
+    header = ["Groups"]
     n = 0
 
-    for line in read_tsv(abundance, "\t"):
+    for line in read_tsv(abundance):
         n += 1
         if n == 1:
-            header, cindex = get_required_columns(line, data)
+            for i in line[1::]:
+                header.append(data[i])
             print("\t".join(header))
             continue
-        if len(line) != len(cindex):
-            line = get_abundance(line, cindex)
-            if not line:
-                continue
         if cut:
             line[0] = line[0].split("|")[-1]
         print("\t".join(line))

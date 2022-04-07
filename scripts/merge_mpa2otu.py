@@ -86,6 +86,8 @@ def read_stat_mpa(files):
 
         abund = 0
         for line in read_tsv(file):
+            if "k__Fungi" in line[0]:
+                line[0] = line[0].split("|", 1)[-1]
             if "__" in line[0]:
                 tax_dict = split_tax(line[0])
             else:

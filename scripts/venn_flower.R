@@ -12,7 +12,9 @@ get_color <- function(samples){
 
     #根据样本数目产生对应得颜色列表
     sam_num = length(samples)
-    if (sam_num <= 12){
+    if (sam_num <= 2){
+        colors <- c("#8DD3C7", "#FFFFB3")
+    }else if(sam_num <= 12){
         colors <- brewer.pal(n=sam_num, name="Paired")
     }else{
         colors <- brewer.pal(n=12, name="Paired")
@@ -117,7 +119,9 @@ venn_flower <- function(data, prefix){
     result <- stat_core_otu(data)
 
     if (length(samples) <= 6){
-        venn <- venn.diagram(x=result[[1]], category.names=samples, fill=colors, filename=NULL, col=NA, output=TRUE)
+        venn <- venn.diagram(x=result[[1]], category.names=samples, fill=colors,
+                             filename=NULL, col="black", lwd=3, cex=2,
+                             cat.cex=2.5, output=TRUE)
 
         pdf(paste(prefix, ".venn_flower.pdf", sep=""), width = 15, height = 15)
         ptemp <- dev.cur()

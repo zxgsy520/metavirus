@@ -7,17 +7,18 @@ import sys
 import logging
 import argparse
 
+import math
 from collections import OrderedDict
 
 LOG = logging.getLogger(__name__)
 
-__version__ = "1.1.1"
+__version__ = "1.2.2"
 __author__ = ("Xingguo Zhang",)
 __email__ = "invicoun@foxmail.com"
 __all__ = []
 
 
-def read_tsv(file, sep="\t"):
+def read_tsv(file, sep=None):
 
     for line in open(file):
         if isinstance(line, bytes):
@@ -58,13 +59,15 @@ def read_abundance(file, top=20):
     total_abunds = []
 
     n = 0
-    for line in read_tsv(file, sep="\t"):
+    for line in read_tsv(file, "\t"):
         n += 1
         if n ==1:
             samples = line[1::]
             continue
         taxid = line[0].split("|")[-1]
         abunds = str_list2float(line[1::])
+        if sum(abunds) <= 0:
+            continue
         if len(total_abunds) == 0:
             total_abunds = abunds
         else:
@@ -85,7 +88,10 @@ def process_uniform_abundance(abunds, otulist):
     n = 0
 
     for i in otulist:
-        r.append("{:.6f}".format(i*100.0/abunds[n]))
+        if abunds[n] == 0:
+            r.append("0")
+        else:
+            r.append("{:.6f}".format(i*100.0/abunds[n]))
         n += 1
 
     return r
@@ -99,11 +105,28 @@ def read_group(file):
         if line[0].startswith("#") or line[0]=="sample":
             continue
         data[line[0]] = line[1]
-    
+
     return data
 
 
-def cut_relative_abundance(file, group, top=20):
+def process_zscore(otulist):
+
+    total = sum(otulist)
+    meanotu = total*1.0/len(otulist)
+    sd = 0
+
+    for i in otulist:
+        sd += math.pow((i-meanotu), 2)
+    sd = math.sqrt(sd/len(otulist))
+
+    r = []
+    for i in otulist:
+        r.append("{:.6f}".format((i-meanotu)/sd))
+
+    return r
+
+
+def cut_relative_abundance(file, group, top=20, zscore=None):
 
     samples, abunds, data =  read_abundance(file, top)
     if group:
@@ -122,11 +145,13 @@ def cut_relative_abundance(file, group, top=20):
             result[taxid] = {}
             for i in range(len(samples)):
                 sample = samples[i]
-                group = group_dict[sample]
+                group = group_dict[str(sample)]
                 if group not in result[taxid]:
                     result[taxid][group] = []
                 result[taxid][group].append(float(line[i]))
         else:
+            if zscore:
+                line = process_zscore(str_list2float(line))
             print("%s\t%s" % (taxid, "\t".join(line)))
 
     for taxid in result:
@@ -134,6 +159,8 @@ def cut_relative_abundance(file, group, top=20):
         abunds = []
         for i in groups:
             abunds.append("{:.6f}".format(sum(temp[i])/len(temp[i])))
+        if zscore:
+            abunds = process_zscore(str_list2float(abunds))
         print("%s\t%s" % (taxid, "\t".join(abunds)))
 
     return 0
@@ -147,6 +174,8 @@ def add_hlep_args(parser):
         help="Input sample grouping table,  group.list.")
     parser.add_argument("-t", "--top", metavar='INT', type=int, default=20,
         help="Species showing top X in abundance, default=20.")
+    parser.add_argument("--zscore", action="store_true",
+        help="zscore normalization of the data.")
 
     return parser
 
@@ -162,7 +191,11 @@ def main():
     description='''
 For exmple:
         cut_relative_abundance.py abundance_species.xls -t 20 > abundance_species_top20.xls
+        #提取丰度前20的物种，计算相对丰度。
         cut_relative_abundance.py abundance_species.xls --group group.list -t 20 > group.abundance_species_top20.xls
+        #根据组提取丰度前20的物种，计算相对丰度。
+        cut_relative_abundance.py abundance_species.xls -t 20 --zscore > abundance_zscore_top20.xls
+        #提取丰度前20的物种，计算相对丰度并进行zscore标准化处理。
 
 version: %s
 contact:  %s <%s>\
@@ -170,7 +203,7 @@ contact:  %s <%s>\
 
     args = add_hlep_args(parser).parse_args()
 
-    cut_relative_abundance(args.input, args.group, args.top)
+    cut_relative_abundance(args.input, args.group, args.top, args.zscore)
 
 
 if __name__ == "__main__":
