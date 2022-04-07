@@ -179,7 +179,9 @@ def create_virfinder_tasks(genomes, prefix, thread=10, job_type="sge",
         option="-pe smp 1 %s" % QUEUE,
         script="""\
 export PATH={virfinder}:$PATH
-{virfinder}/Rscript {script}/virfinder.R {{genome}} |grep -v score >{{prefix}}.virfinder.tsv
+if [ ! -e {{prefix}}.virfinder.tsv ]; then
+  {virfinder}/Rscript {script}/virfinder.R {{genome}} |grep -v score >{{prefix}}.virfinder.tsv
+fi
 """.format(virfinder=VIRFINDER_R,
             script=SCRIPTS,
             ),
@@ -217,7 +219,7 @@ def create_virkraken_task(genome, prefix, thread=10, job_type="sge",
         x = ""
 
     task = Task(
-        id="vibrant",
+        id="virkraken",
         work_dir= work_dir,
         type=job_type,
         option="-pe smp %s %s" % (thread, QUEUE),
