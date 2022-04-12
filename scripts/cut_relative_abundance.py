@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 LOG = logging.getLogger(__name__)
 
-__version__ = "1.2.2"
+__version__ = "1.2.3"
 __author__ = ("Xingguo Zhang",)
 __email__ = "invicoun@foxmail.com"
 __all__ = []
@@ -126,7 +126,21 @@ def process_zscore(otulist):
     return r
 
 
-def cut_relative_abundance(file, group, top=20, zscore=None):
+def process_log(otulist):
+
+    r = []
+
+    for i in otulist:
+        if i <= 0:
+            i = 1e-6
+        else:
+            i = i*1e4
+        r.append("{:.6f}".format(math.log10(i)))
+
+    return r
+
+
+def cut_relative_abundance(file, group, top=20, model="zscore"):
 
     samples, abunds, data =  read_abundance(file, top)
     if group:
@@ -150,8 +164,12 @@ def cut_relative_abundance(file, group, top=20, zscore=None):
                     result[taxid][group] = []
                 result[taxid][group].append(float(line[i]))
         else:
-            if zscore:
+            if "zscore" == model:
                 line = process_zscore(str_list2float(line))
+            elif "log" == model:
+                line = process_log(str_list2float(line))
+            else:
+                pass
             print("%s\t%s" % (taxid, "\t".join(line)))
 
     for taxid in result:
@@ -159,8 +177,12 @@ def cut_relative_abundance(file, group, top=20, zscore=None):
         abunds = []
         for i in groups:
             abunds.append("{:.6f}".format(sum(temp[i])/len(temp[i])))
-        if zscore:
+        if "zscore" == model:
             abunds = process_zscore(str_list2float(abunds))
+        elif "log" == model:
+            abunds = process_log(str_list2float(abunds))
+        else:
+            pass
         print("%s\t%s" % (taxid, "\t".join(abunds)))
 
     return 0
@@ -174,8 +196,9 @@ def add_hlep_args(parser):
         help="Input sample grouping table,  group.list.")
     parser.add_argument("-t", "--top", metavar='INT', type=int, default=20,
         help="Species showing top X in abundance, default=20.")
-    parser.add_argument("--zscore", action="store_true",
-        help="zscore normalization of the data.")
+    parser.add_argument("-m", "--model",  metavar="STR", type=str, default=None,
+        choices=["zscore", "log", ""],
+        help="zscore: zscore normalization of the data; log:, Logarithmic processing of data; choices=[zscore, log, None],  default=None.")
 
     return parser
 
@@ -194,8 +217,10 @@ For exmple:
         #提取丰度前20的物种，计算相对丰度。
         cut_relative_abundance.py abundance_species.xls --group group.list -t 20 > group.abundance_species_top20.xls
         #根据组提取丰度前20的物种，计算相对丰度。
-        cut_relative_abundance.py abundance_species.xls -t 20 --zscore > abundance_zscore_top20.xls
+        cut_relative_abundance.py abundance_species.xls -t 20 -m zscore > abundance_zscore_top20.xls
         #提取丰度前20的物种，计算相对丰度并进行zscore标准化处理。
+        cut_relative_abundance.py abundance_species.xls -t 20 -m log > abundance_zscore_top20.xls
+        #提取丰度前20的物种，计算相对丰度并进行对数处理标准化处理。
 
 version: %s
 contact:  %s <%s>\
@@ -203,7 +228,7 @@ contact:  %s <%s>\
 
     args = add_hlep_args(parser).parse_args()
 
-    cut_relative_abundance(args.input, args.group, args.top, args.zscore)
+    cut_relative_abundance(args.input, args.group, args.top, args.model)
 
 
 if __name__ == "__main__":
