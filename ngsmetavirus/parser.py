@@ -4,7 +4,7 @@
 from ngsmetavirus.config import *
 
 __all__ = ["add_mngs_qc_args", "add_rm_host_args", "add_mngs_asm_args", 
-    "add_annotation_args", "add_mngs_all_args"]
+    "add_mngs_ann_args", "add_mngs_all_args"]
 
 def add_workflow_args(parser):
     """
@@ -111,18 +111,13 @@ def add_mngs_asm_args(parser):
     return parser
 
 
-def add_annotation_args(parser):
+def add_mngs_ann_args(parser):
 
-    parser.add_argument("-g", "--genomes", metavar="FILE", nargs='+', type=str, required=True,
+    parser.add_argument("genome", metavar="FILE", type=str,
         help="Input the assembled genome file.")
-    parser.add_argument("--group", metavar="FILE", type=str, required=True,
-        help="Input the grouping file of each sample.")
-    parser.add_argument("-d", "--depths", metavar="FILE", nargs='+', type=str, required=True,
-        help="Input genome depth statistics file.")
-    parser.add_argument("-m", "--model", metavar="FILE", type=str,
-        default="/export/personal/software/software/MetaGeneMark/v.3.38//MetaGeneMark_v1.mod",
-        help="Model used for gene prediction.")
-    parser.add_argument("--thread", metavar="INT", type=int, default=6,
+    parser.add_argument("-p", "--prefix", metavar="FILE", type=str, default="MNGS",
+        help="Input result file prefix, default=MNGS.")
+    parser.add_argument("-t", "--thread", metavar="INT", type=int, default=6,
         help="Set the number of threads used by the process, default=6")
 
     parser = add_workflow_args(parser)
@@ -132,6 +127,10 @@ def add_annotation_args(parser):
 
 def add_mngs_all_args(parser):
 
+    parser.add_argument("--project", metavar="STR", type=str, required=True,
+        help="Input project name.")
+    parser.add_argument("--id", metavar="STR", type=str, required=True,
+        help="Input project id.")
     parser.add_argument("-m", "--memory", metavar="INT", type=int, default=10,
         help="The memory that the program runs on ,default=10(G)")
     parser = add_mngs_qc_args(parser)

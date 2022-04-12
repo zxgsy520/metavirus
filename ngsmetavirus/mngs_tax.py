@@ -53,9 +53,11 @@ python {script}/kraken2species.py {prefix}.kraken.out --taxonomy {taxonomy} >{pr
 export PATH={bracken}:$PATH
 bracken -d {database} -i {prefix}.kraken.report -o {prefix}.bracken.out -w {prefix}.bracken.report -r 150 -l S
 {krakentools}/kreport2mpa.py  -r {prefix}.bracken.report -o {prefix}.report
+python {script}/stat_mpa_tax.py {prefix}.report >{prefix}.stat_read_tax.tsv
 {krakentools}/kreport2krona.py -r  {prefix}.bracken.report -o {prefix}.krona_report
 {krona_bin}/ktImportText {prefix}.krona_report -o {prefix}.taxonomy.html
 cp {prefix}.bracken.out {prefix}.report {prefix}.taxonomy.html {out_dir}
+cp {prefix}.stat_read_tax.tsv {out_dir}
 """.format(kraken2=KRAKEN2_BIN,
             bracken=BRACKEN_BIN,
             krakentools=KrakenTools,

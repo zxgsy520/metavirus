@@ -9,7 +9,6 @@ import argparse
 
 from collections import OrderedDict
 from ngsmetavirus.config import *
-from ngsmetavirus.find_virus import run_find_virus
 from ngsmetavirus.parser import add_mngs_asm_args
 from dagflow import DAG, Task, do_dag
 from ngsmetavirus.common import check_path, mkdir, get_version
@@ -41,14 +40,16 @@ def create_megahit_task(prefix, read1, read2, thread, memory, job_type,
         type=job_type,
         option="-l vf=%dG -pe smp %s %s" % (memory, thread, QUEUE),
         script="""
-export PATH={megahit}:$PATH
+export PATH={megahit}:{bin}:$PATH
 megahit -1 {read1} -2 {read2} \\
     --min-contig-len 500 --k-list 31,41,63,87,113,141 \\
     --num-cpu-threads {thread} --out-dir {prefix}_megahit
-{scripts}/sort_rename_id.py {prefix}_megahit/final.contigs.fa --prefix {prefix} > {prefix}.genome.fasta
-rm -rf {prefix}_megahit
-cp {prefix}.genome.fasta {out_dir}
+biotool sort_genome {prefix}_megahit/final.contigs.fa --minlen 50 > {prefix}.genome.fasta
+biotool stats {prefix}.genome.fasta >{prefix}.stat_genome.tsv
+#rm -rf {prefix}_megahit
+cp {prefix}.genome.fasta {prefix}.stat_genome.tsv {out_dir}
 """.format(megahit=MEGAHIT_BIN,
+            bin=BIN,
             scripts=SCRIPTS,
             read1=read1,
             read2=read2,
@@ -83,12 +84,14 @@ def create_spades_task(prefix, read1, read2, atype, thread, job_type,
 export PATH={spades}:$PATH
 spades.py --{atype} -1 {read1} -2 {read2} --threads {thread} -o {prefix}_spades
 {bin}/biotool sort_genome {prefix}_spades/scaffolds.fasta --minlen 50 >{prefix}.genome.fasta
+biotool stats {prefix}.genome.fasta >{prefix}.stat_genome.tsv
 mv {prefix}_spades/contigs.fasta {prefix}.contigs.fasta
 #mv {prefix}_spades/assembly_graph.fastg {prefix}.graph.fastg
 #rm -rf {prefix}_spades
-cp {prefix}.genome.fasta {out_dir}
+cp {prefix}.genome.fasta {prefix}.stat_genome.tsv {out_dir}
 """.format(spades=SPADES_BIN,
             bin=BIN,
+            scripts=SCRIPTS,
             read1=read1,
             read2=read2,
             atype=atype,
@@ -99,6 +102,29 @@ cp {prefix}.genome.fasta {out_dir}
     )
 
     return task, option, os.path.join(work_dir, "%s.genome.fasta" % prefix)
+
+
+def run_find_virus_task(genome, prefix, thread, job_type, work_dir, out_dir):
+
+    task = Task(
+        id="find_virus",
+        work_dir=work_dir,
+        type=job_type,
+        option="-pe smp 1",
+        script="""
+python {root}/subpipe/find_virus.py {genome} --name {prefix} \\
+  --thread {thread} --job_type {job_type} --work_dir {work_dir} --out_dir {out_dir}
+""".format(root=ROOT,
+            genome=genome,
+            prefix=prefix,
+            thread=thread,
+            job_type=job_type,
+            work_dir=work_dir,
+            out_dir=out_dir
+        )
+    )
+
+    return task
 
 
 def run_mngs_asm(prefix, read1, read2, atype, thread, memory, job_type,
@@ -139,20 +165,19 @@ def run_mngs_asm(prefix, read1, read2, atype, thread, memory, job_type,
         )
     options["software"].update(option)
     dag.add_task(task)
-    do_dag(dag, concurrent, refresh)
     
     if atype in ["metaviral", "rnaviral"]:
-        noptions = run_find_virus(
-            genome=genome,
-            name=prefix,
-            thread=thread,
-            job_type=job_type,
-            work_dir=work_dir,
-            out_dir=out_dir,
-            concurrent=concurrent,
-            refresh=refresh,
+        find_virus_task = run_find_virus_task(
+           genome=genome,
+           prefix=prefix,
+           thread=thread,
+           job_type=job_type,
+           work_dir=work_dir,
+           out_dir=out_dir
         )
-        options["software"].update(noptions["software"])
+        dag.add_task(find_virus_task)
+        find_virus_task.set_upstream(task)
+    do_dag(dag, concurrent, refresh)
 
     return options, genome
 

@@ -46,7 +46,7 @@ cat {read2} >{prefix}.raw.R2.fq.gz
 
 
 def create_mngs_task(prefix, read1, read2, reference, nohost, dtype, atype,
-                     job_type, work_dir, out_dir, trim=0):
+                     job_type, work_dir, out_dir, trim=0, project="", id=""):
 
     if nohost:
         nohost = "--nohost"
@@ -66,6 +66,7 @@ def create_mngs_task(prefix, read1, read2, reference, nohost, dtype, atype,
 {root}/ngsmetavirus.py all \\
   --prefix {prefix} --read1 {read1} --read2 {read2} \\
   --dtype {dtype} --atype {atype} {rx} \\
+  --project {project} --id {id} \\
   --trim {trim} --thread 6 --job_type {job_type} {nohost} \\
   --work_dir {work}  --out_dir {out}
 """.format(root=ROOT,
@@ -77,6 +78,8 @@ def create_mngs_task(prefix, read1, read2, reference, nohost, dtype, atype,
             dtype=dtype,
             atype=atype,
             trim=trim,
+            project=project,
+            id=id,
             job_type=job_type,
             work=work_dir,
             out=out_dir
@@ -87,7 +90,7 @@ def create_mngs_task(prefix, read1, read2, reference, nohost, dtype, atype,
 
 
 def run_mngs_multi(input, reference, nohost, dtype, atype, trim, job_type,
-                   concurrent, refresh, work_dir, out_dir):
+                   concurrent, refresh, work_dir, out_dir, project="", id=""):
 
     input = check_path(input)
     work_dir = mkdir(work_dir)
@@ -134,6 +137,8 @@ def run_mngs_multi(input, reference, nohost, dtype, atype, trim, job_type,
             atype=atype,
             trim=trim,
             job_type=job_type,
+            project=project,
+            id=id,
             work_dir=prefix_work,
             out_dir=mkdir(os.path.join(out_dir, prefix))
         )
@@ -159,6 +164,8 @@ def mngs_multi(args):
         concurrent=args.concurrent,
         refresh=args.refresh,
         job_type=args.job_type,
+        project=args.project,
+        id=args.id
     )
 
 
@@ -179,6 +186,10 @@ def add_mngs_multi_args(parser):
               default=metagenome.""")
     parser.add_argument("--trim", metavar="INT", type=int, default=5,
         help="Set trim length, default=5")
+    parser.add_argument("--project", metavar="STR", type=str, required=True,
+        help="Input project name.")
+    parser.add_argument("--id", metavar="STR", type=str, required=True,
+        help="Input project id.")
     parser.add_argument("--concurrent", metavar="INT", type=int, default=10,
         help="Maximum number of jobs concurrent  (default: 10).")
     parser.add_argument("--refresh", metavar="INT", type=int, default=30,

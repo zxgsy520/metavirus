@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 ROOT = "/Work/user/zhangxg/pipeline/metavirus/v1.1.1/"
 BIN = os.path.join(ROOT, "bin")
+TEMPLATES = os.path.join(ROOT, "template")
 SCRIPTS = os.path.join(ROOT, "scripts")
 DATABASE = os.path.join(ROOT, "database") 
 TAXONOMY = os.path.join(DATABASE, "species.taxonomy.gz")
@@ -28,7 +29,8 @@ KRAKEN2_BIN = "/Work/pipeline/software/meta/kraken2/v2.1.2/bin/"
 BRACKEN_BIN = "/Work/pipeline/software/meta/bracken/v2.6.1/bin/"
 KrakenTools = "/Work/pipeline/software/meta/KrakenTools/v1.2/"
 BRONA_BIN = "/Work/pipeline/software/meta/krona/v2.8.1/bin/"
-KRAKEN_DB = "/Work/database/Standard/20210517/standard"
+KRAKEN_DB = "/Work/user/liyilin/database/kraken"
+#KRAKEN_DB = "/Work/database/Standard/20210517/standard"
 TAXONOMY = "/Work/database/taxonomy/202111/kraken.taxonomy.gz"
 
 ##assemble
@@ -37,6 +39,12 @@ MEGAHIT_BIN = "/Work/pipeline/software/meta/megahit/v1.2.9/bin/"
 VIRSORTER_BIN = "/Work/pipeline/software/meta/virsorter/lastest/bin/"
 CHECKV_BIN = "/Work/pipeline/software/meta/checkv/v0.8.1/bin/"
 DEEPVIRFINDER_BIN = "/Work/pipeline/software/meta/deepvirfinder/v2020.11.21/bin/"
+
+
+##annotation
+GMHMMP_BIN = "/Work/pipeline/software/meta/MetaGeneMark/v.3.38/"
+ABRICATE_BIN = "/Work/pipeline/software/meta/abricate/v1.0.1/bin/"
+ABRICATE_ENV = ABRICATE_BIN
 
 ##virusreseq
 SNIPPY_BIN = "/Work/pipeline/software/meta/snippy/v4.5.9/bin/"
@@ -83,8 +91,6 @@ PRODIGAL_BIN = "/export/personal/software/software/prodigal"
 PROKKA_BIN = "/export/personal/software/software/prokka/v1.14.6/bin/"
 PROKKA_SOFT = "/export/personal/software/software/prokka/v1.14.6/binaries/linux"
 DIAMOND_BIN = "/export/personal/software/software/diamond/v0.9.34/"
-ABRICATE_BIN = "/export/personal/software/software/abricate/v1.0.1/bin/"
-ABRICATE_ENV = "/export/personal/software/software/abricate/v1.0.1/bin/"
 
 #METABIN
 METABAT_BIN = "/export/personal/software/software/metabat/v2.12.1/"
