@@ -149,7 +149,8 @@ def create_heatmap_tasks(abunds, group, job_type, work_dir="", out_dir="", top=5
         option="-pe smp 2 %s" % QUEUE,
         script="""
 export PATH={python}:$PATH
-python {script}/cut_relative_abundance.py {{abunds}} --top {top} --zscore >{{sorts}}_top{top}.tsv
+#python {script}/cut_relative_abundance.py {{abunds}} --top {top} -m zscore >{{sorts}}_top{top}.tsv
+python {script}/cut_relative_abundance.py {{abunds}} --top {top} -m log >{{sorts}}_top{top}.tsv
 if [ -n "{group}" ]; then
     {rbin}/Rscript {script}/group_heatmap.R {{sorts}}_top{top}.tsv {group} {{sorts}}_top{top}_heatmap
 else
@@ -157,7 +158,7 @@ else
 fi
 cp {{sorts}}_top{top}_heatmap.p* {out_dir}
 if [ -n "{group}" ]; then
-    python {script}/cut_relative_abundance.py {{abunds}} --group {group} --top {top} --zscore >group.{{sorts}}_top{top}.tsv
+    python {script}/cut_relative_abundance.py {{abunds}} --group {group} --top {top} -m log >group.{{sorts}}_top{top}.tsv
     {rbin}/Rscript {script}/cluster_heatmap.R group.{{sorts}}_top{top}.tsv group.{{sorts}}_top{top}_heatmap
     cp group.{{sorts}}_top{top}_heatmap.p* {out_dir}
 fi
