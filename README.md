@@ -15,3 +15,7 @@ Dependent software
 #### Taxonomic assignment
 * [vConTACT2](https://bitbucket.org/MAVERICLab/vcontact2/wiki/Home) 安装：conda create --prefix=/software/meta/vcontact2/v0.9.19 -c bioconda vcontact2=0.9.19  mcl blast diamond numpy=1.19.5 pandas=0.25.3
 * [CAT](https://github.com/dutilh/CAT)
+
+### Required R packages
+* [complexheatmap](https://bioconductor.org/packages/3.14/bioc/html/ComplexHeatmap.html)
+* 
