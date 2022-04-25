@@ -19,3 +19,4 @@ Dependent software
 ### Required R packages
 * [complexheatmap](https://bioconductor.org/packages/3.14/bioc/html/ComplexHeatmap.html)
 * [dplyr](https://dplyr.tidyverse.org)
+* [RColorBrewer](https://cran.r-project.org/web/packages/RColorBrewer/index.html)
